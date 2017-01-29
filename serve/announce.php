@@ -13,24 +13,24 @@ function fail($reason) {
 }
 
 $keys = array(
-    array('username', true),
-    array('passkey', true),
-    array('info_hash', true),
-    array('peer_id', true),
-    array('port', true),
-    array('no_peer_id', false),
-    array('ip', false),
-    array('numwant', false),
-    array('event', false),
-    array('left', false),
+    'username' => true,
+    'passkey' => true,
+    'info_hash' => true,
+    'peer_id' => true,
+    'port' => true,
+    'no_peer_id' => false,
+    'ip' => false,
+    'numwant' => false,
+    'event' => false,
+    'left' => false,
 );
 
 $data = array();
-foreach ($keys as $key) {
-    if (array_key_exists($key[0], $_GET)) {
-        $data[$key[0]] = $_GET[$key[0]];
-    } else if ($key[1]) {
-        fail(sprintf('Missing key: %s', $key[0]));
+foreach ($keys as $key => $req) {
+    if (array_key_exists($key, $_GET)) {
+        $data[$key] = $_GET[$key];
+    } else if ($req) {
+        fail(sprintf('missing key: %s', $key));
     }
 }
 
@@ -87,17 +87,19 @@ $res = db_query_params('SELECT count(nullif(completed,false)) AS complete, count
 $comp_res = pg_fetch_assoc($res) or fail('db error');
 
 
-$output = array();
-$output['interval'] = 30 * 60;
-$output['complete'] = intval($comp_res['complete']);
-$output['incomplete'] = intval($comp_res['incomplete']);
-$output['peers'] = array();
+$output = array(
+    'interval' => 30 * 60,
+    'complete' => intval($comp_res['complete']),
+    'incomplete' => intval($comp_res['incomplete']),
+    'peers' => array(),
+);
 
 $res = db_query_params('SELECT chosen_peer_id, ip, port FROM peers WHERE torrent_id = $1 AND peer_id != $2 ORDER BY random() LIMIT $3', array($torrent_row['torrent_id'], $peer_row['peer_id'], $data['numwant'])) or fail('db error');
 while ($row = pg_fetch_assoc($res)) {
-    $peer = array();
-    $peer['ip'] = $row['ip'];
-    $peer['port'] = intval($row['port']);
+    $peer = array(
+        'ip' => $row['ip'],
+        'port' => intval($row['port']),
+    );
     if (!array_key_exists('no_peer_id', $data)) {
         $peer['peer_id'] = hex2bin($row['chosen_peer_id']);
     }

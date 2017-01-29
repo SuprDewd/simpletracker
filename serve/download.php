@@ -32,15 +32,14 @@ if ($row === false) {
     }
     $modified['info']['private'] = 1;
 
-    $modified['announce'] = $CONFIG['base_url'] . '/announce.php?username=' . $user_row['username'] . '&passkey=' . $user_row['passkey'];
+    $modified['announce'] = $CONFIG['base_url'] . '/announce.php?username=' . urlencode($user_row['username']) . '&passkey=' . urlencode($user_row['passkey']);
 
     $output = bencode($modified) or die('bencoding error');
 
     header('Cache-control: private');
     header('Content-Type: application/octet-stream');
-    header('Content-Length: '.strlen($output));
-    header('Content-Disposition: filename='.$row['name']);
-    flush();
+    header('Content-Length: ' . strlen($output));
+    header('Content-Disposition: filename=' . $row['name']);
     echo $output;
 }
 

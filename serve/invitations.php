@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $res = db_query_params('SELECT 1 FROM users WHERE email = $1', array($email)) or die('db error');
     if (pg_num_rows($res) > 0) {
-        printf('Email already registered');
+        printf('email already registered');
         die;
     }
 
@@ -65,7 +65,7 @@ if ($res && pg_num_rows($res) > 0) {
 }
 
 printf('New invitation');
-printf('<form method="POST" action="/invitations.php">');
+printf('<form method="POST" action="invitations.php">');
 csrf_html();
 
 printf('Email: ');

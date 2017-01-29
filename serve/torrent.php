@@ -19,7 +19,6 @@ if ($row) {
     $res = db_query_params('SELECT count(nullif(completed,false)) AS complete, count(nullif(completed,true)) AS incomplete FROM peers WHERE torrent_id = $1', array($row['torrent_id'])) or die('db error');
     $comp_res = pg_fetch_assoc($res) or die('db error');
 
-
     if (array_key_exists('success', $_GET)) {
         printf('Upload successful, please download the torrent again and start seeding');
         printf('<br/>');

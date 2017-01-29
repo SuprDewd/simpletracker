@@ -85,13 +85,13 @@ function site_header() {
     if (array_key_exists('user', $_SESSION)) {
         printf('sup %s', html_escape($_SESSION['user']['username']));
         printf(' | ');
-        printf('<a href="/index.php">index</a>');
+        printf('<a href="index.php">index</a>');
         printf(' | ');
-        printf('<a href="/upload.php">upload</a>');
+        printf('<a href="upload.php">upload</a>');
         printf(' | ');
-        printf('<a href="/invitations.php">invitations</a>');
+        printf('<a href="invitations.php">invitations</a>');
         printf(' | ');
-        printf('<a href="/logout.php">logout</a>');
+        printf('<a href="logout.php">logout</a>');
         printf('<br/>');
         printf('<br/>');
     }
