@@ -78,7 +78,7 @@ class MySqlDatabase extends Database {
     }
 
     public function encode_bool($s) {
-        return $s;
+        return $s ? 1 : 0;
     }
 }
 

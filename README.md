@@ -30,5 +30,6 @@ Here's a terse walkthrough for the tech-savy:
 7. Manually remove the `simpletracker` account from the users table.
 
 The code has been tested on an Arch Linux server, using nginx (1.10.1), and both
-MySQL (10.1.18-MariaDB) and PostgreSQL (9.5.4). Your mileage may vary.
+MySQL (10.1.18-MariaDB) and PostgreSQL (9.5.4). Users have also reported the
+code working on Windows. Your mileage may vary.
 
