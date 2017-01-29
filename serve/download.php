@@ -23,14 +23,11 @@ if ($row === false) {
 } else {
 
     $modified = bdecode(pg_unescape_bytea($row['data'])) or die('bencoding error');
+    // Note: $modified['info'] must not be changed here (it will change the info hash)
 
     if (array_key_exists('announce-list', $modified)) {
         unset($modified['announce-list']);
     }
-    if (!array_key_exists('info', $modified)) {
-        $modified['info'] = array();
-    }
-    $modified['info']['private'] = 1;
 
     $modified['announce'] = $CONFIG['base_url'] . '/announce.php?username=' . urlencode($user_row['username']) . '&passkey=' . urlencode($user_row['passkey']);
 

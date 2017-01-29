@@ -54,6 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die('invalid torrent');
     }
 
+    $arr['info']['private'] = 1;
+
     $infobc = bencode($arr['info']);
     if ($infobc === false) {
         die('bencoding error');
