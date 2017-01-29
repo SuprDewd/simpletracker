@@ -1,7 +1,7 @@
 <?php
 
 require_once '../site.php';
-db_connect();
+$db->connect();
 
 if (array_key_exists('user', $_SESSION)) {
     header(sprintf('Location: %s/', $CONFIG['base_url']));
@@ -30,23 +30,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (strlen($data['email']) > 255) $errors []= 'email too long';
 
     if (empty($errors)) {
-        $res = db_query_params('SELECT 1 FROM users WHERE username=$1 OR email=$2', array($data['username'], $data['email'])) or die('db error');
-        if (pg_num_rows($res) > 0) {
-            $errors []= 'username or email already taken';
-        }
-    }
-
-    if (empty($errors)) {
-        $res = db_query_params('SELECT invitation_id, user_id FROM invitations WHERE email=$1 AND invitation_key=$2', array($data['email'], $data['invitation']));
-        if (!($invitation_row = pg_fetch_assoc($res))) {
+        $res = $db->query_params('SELECT invitation_id, user_id FROM invitations WHERE email = :email AND invitation_key = :invitation_key', array('email' => $data['email'], 'invitation_key' => $data['invitation']));
+        if (!($invitation_row = $res->fetch())) {
             $errors []= 'invitation key is not valid for this email address';
         }
     }
 
     if (empty($errors)) {
+        $res = $db->query_params('SELECT 1 FROM users WHERE username = :username OR email = :email', array('username' => $data['username'], 'email' => $data['email'])) or die('db error');
+        if ($res->fetch()) {
+            $errors []= 'username or email already taken';
+        }
+    }
+
+    if (empty($errors)) {
         $pw = password_hash($data['password'], PASSWORD_DEFAULT) or die('password error');
-        db_query_params('INSERT INTO users (username, password, passkey, email, invited_by) VALUES ($1,$2,$3,$4,$5)', array($data['username'], $pw, random_hash(), $data['email'], $invitation_row['user_id'])) or die('db error');
-        db_query_params('DELETE FROM invitations WHERE invitation_id = $1', array($invitation_row['invitation_id'])) or die('db error');
+        $db->query_params('INSERT INTO users (username, password, passkey, email, invited_by) VALUES (:username, :password, :passkey, :email, :invited_by)', array('username' => $data['username'], 'password' => $pw, 'passkey' => random_hash(), 'email' => $data['email'], 'invited_by' => $invitation_row['user_id'])) or die('db error');
+        $db->query_params('DELETE FROM invitations WHERE invitation_id = :invitation_id', array('invitation_id' => $invitation_row['invitation_id'])) or die('db error');
 
         header(sprintf('Location: %s/login.php?success', $CONFIG['base_url']));
         die;

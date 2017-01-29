@@ -2,9 +2,9 @@
 
 require_once '../site.php';
 require_once '../bencoding.php';
-db_connect();
+$db->connect();
 
-db_query_params('DELETE FROM peers WHERE last_announce + interval \'1 hour\' < CURRENT_TIMESTAMP');
+$db->query_params('DELETE FROM peers WHERE last_announce + ' . $db->interval('1 hour') . ' < CURRENT_TIMESTAMP');
 
 header('Content-Type: text/plain');
 
@@ -37,8 +37,8 @@ foreach ($keys as $key => $req) {
 $data['info_hash'] = bin2hex($data['info_hash']);
 $data['peer_id'] = bin2hex($data['peer_id']);
 
-$res = db_query_params('SELECT user_id FROM users WHERE username = $1 AND passkey = $2', array($data['username'], $data['passkey'])) or fail('db error');
-$user_row = pg_fetch_assoc($res) or fail('access denied');
+$res = $db->query_params('SELECT user_id FROM users WHERE username = :username AND passkey = :passkey', array('username' => $data['username'], 'passkey' => $data['passkey'])) or fail('db error');
+$user_row = $res->fetch() or fail('access denied');
 
 if (!is_numeric($data['port'])) fail('invalid port');
 $data['port'] = intval($data['port']);
@@ -63,28 +63,28 @@ if (array_key_exists('numwant', $data)) {
     $data['numwant'] = 30;
 }
 
-$res = db_query_params('SELECT torrent_id FROM torrents WHERE info_hash = $1', array($data['info_hash'])) or fail('db error');
-$torrent_row = pg_fetch_assoc($res) or fail('no such torrent');
+$res = $db->query_params('SELECT torrent_id FROM torrents WHERE info_hash = :info_hash', array('info_hash' => $data['info_hash'])) or fail('db error');
+$torrent_row = $res->fetch() or fail('no such torrent');
 
-$res = db_query_params('SELECT peer_id FROM peers WHERE user_id = $1 AND torrent_id = $2 AND chosen_peer_id = $3', array($user_row['user_id'], $torrent_row['torrent_id'], $data['peer_id'])) or fail('db error');
+$res = $db->query_params('SELECT peer_id FROM peers WHERE user_id = :user_id AND torrent_id = :torrent_id AND chosen_peer_id = :chosen_peer_id', array('user_id' => $user_row['user_id'], 'torrent_id' => $torrent_row['torrent_id'], 'chosen_peer_id' => $data['peer_id'])) or fail('db error');
 
-if (!($peer_row = pg_fetch_assoc($res))) {
-    $peer_row = db_query_params('INSERT INTO peers (user_id, torrent_id, chosen_peer_id, ip, port) VALUES ($1,$2,$3,$4,$5) RETURNING peer_id', array($user_row['user_id'], $torrent_row['torrent_id'], $data['peer_id'], $data['ip'], $data['port'])) or fail('db error');
-    $peer_row = pg_fetch_assoc($peer_row);
+if (!($peer_row = $res->fetch())) {
+    $res = $db->query_params('INSERT INTO peers (user_id, torrent_id, chosen_peer_id, ip, port) VALUES (:user_id, :torrent_id, :chosen_peer_id, :ip, :port)', array('user_id' => $user_row['user_id'], 'torrent_id' => $torrent_row['torrent_id'], 'chosen_peer_id' => $data['peer_id'], 'ip' => $data['ip'], 'port' => $data['port']), 'peer_id');
+    $peer_row = array('peer_id' => $res);
 } else {
-    db_query_params('UPDATE peers SET ip = $1, port = $2, last_announce = CURRENT_TIMESTAMP WHERE peer_id = $3', array($data['ip'], $data['port'], $peer_row['peer_id'])) or fail('db error');
+    $db->query_params('UPDATE peers SET ip = :ip, port = :port, last_announce = CURRENT_TIMESTAMP WHERE peer_id = :peer_id', array('ip' => $data['ip'], 'port' => $data['port'], 'peer_id' => $peer_row['peer_id'])) or fail('db error');
 }
 
 if (array_key_exists('left', $data)) {
-    db_query_params('UPDATE peers SET completed = $1 WHERE peer_id = $2', array($data['left'] === 0 ? 't' : 'f', $peer_row['peer_id']));
+    $db->query_params('UPDATE peers SET completed = :completed WHERE peer_id = :peer_id', array('completed' => $db->encode_bool($data['left'] === 0), 'peer_id' => $peer_row['peer_id']));
 }
 
 if (array_key_exists('event', $data) && $data['event'] === 'stopped') {
-    db_query_params('DELETE FROM peers WHERE peer_id = $1', array($peer_row['peer_id']));
+    $db->query_params('DELETE FROM peers WHERE peer_id = :peer_id', array('peer_id' => $peer_row['peer_id']));
 }
 
-$res = db_query_params('SELECT count(nullif(completed,false)) AS complete, count(nullif(completed,true)) AS incomplete FROM peers WHERE torrent_id = $1', array($torrent_row['torrent_id'])) or fail('db error');
-$comp_res = pg_fetch_assoc($res) or fail('db error');
+$res = $db->query_params('SELECT count(nullif(completed,false)) AS complete, count(nullif(completed,true)) AS incomplete FROM peers WHERE torrent_id = :torrent_id', array('torrent_id' => $torrent_row['torrent_id'])) or fail('db error');
+$comp_res = $res->fetch() or fail('db error');
 
 
 $output = array(
@@ -94,8 +94,8 @@ $output = array(
     'peers' => array(),
 );
 
-$res = db_query_params('SELECT chosen_peer_id, ip, port FROM peers WHERE torrent_id = $1 AND peer_id != $2 ORDER BY random() LIMIT $3', array($torrent_row['torrent_id'], $peer_row['peer_id'], $data['numwant'])) or fail('db error');
-while ($row = pg_fetch_assoc($res)) {
+$res = $db->query_params('SELECT chosen_peer_id, ip, port FROM peers WHERE torrent_id = :torrent_id AND peer_id != :peer_id ORDER BY ' . $db->random() . ' LIMIT :limit', array('torrent_id' => $torrent_row['torrent_id'], 'peer_id' => $peer_row['peer_id'], 'limit' => $data['numwant'])) or fail('db error');
+while ($row = $res->fetch()) {
     $peer = array(
         'ip' => $row['ip'],
         'port' => intval($row['port']),

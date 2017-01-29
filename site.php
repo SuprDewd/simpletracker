@@ -1,31 +1,32 @@
 <?php
 
 $CONFIG = array(
-    'db_connection_string' => 'host=localhost dbname=simpletracker user=simpletracker password=simpletracker',
+    'db' => array(
+        'connection_string' => 'pgsql:host=localhost;dbname=simpletracker',
+        'type' => 'pgsql',
+        'user'=>'simpletracker',
+        'password' => 'simpletracker',
+    ),
+
+    // Example MySQL configuration
+    // 'db' => array(
+    //     'connection_string' => 'mysql:host=localhost;dbname=simpletracker',
+    //     'type' => 'mysql',
+    //     'user'=>'simpletracker',
+    //     'password' => 'simpletracker',
+    // ),
+
     'site_title' => 'simpletracker',
     'base_url' => 'https://domain.xyz', // no trailing slash
     'max_torrent_size' => 20*1024*1024,
 );
 
+require_once 'db.php';
+$db = $CONFIG['db']['type'] == 'mysql' ? new MySqlDatabase()
+                                       : new PostgreSqlDatabase();
+
 function html_escape($s) {
     return htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
-}
-
-$connection = null;
-function db_connect() {
-    global $connection;
-    global $CONFIG;
-    if (is_null($connection)) {
-        $connection = pg_connect($CONFIG['db_connection_string']);
-    }
-}
-
-function db_query_params($query, $params=null) {
-    global $connection;
-    if (is_null($params)) {
-        $params = array();
-    }
-    return pg_query_params($connection, $query, $params);
 }
 
 function random_hash() {

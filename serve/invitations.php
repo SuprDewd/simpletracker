@@ -1,7 +1,7 @@
 <?php
 
 require_once '../site.php';
-db_connect();
+$db->connect();
 require_auth();
 
 
@@ -16,13 +16,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die('invalid email');
     }
 
-    $res = db_query_params('SELECT 1 FROM users WHERE email = $1', array($email)) or die('db error');
-    if (pg_num_rows($res) > 0) {
+    $res = $db->query_params("SELECT email FROM users WHERE email = :email", array('email' => $email)) or die('db error');
+    if ($res->fetch()) {
         printf('email already registered');
         die;
     }
 
-    db_query_params('INSERT INTO invitations (user_id, email, invitation_key) VALUES ($1,$2,$3)', array($_SESSION['user']['user_id'], $email, random_hash())) or die('db error');
+    $db->query_params('INSERT INTO invitations (user_id, email, invitation_key) VALUES (:user_id, :email, :invitation_key)', array('user_id' => $_SESSION['user']['user_id'], 'email' => $email, 'invitation_key' => random_hash())) or die('db error');
     header(sprintf('Location: %s/invitations.php?success', $CONFIG['base_url']));
     die;
 }
@@ -30,30 +30,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 site_header();
 
-$res = db_query_params('SELECT username, email FROM users WHERE invited_by = $1 ORDER BY username', array($_SESSION['user']['user_id']));
-if ($res && pg_num_rows($res) > 0) {
-    printf('Invited');
-    printf('<br/>');
-    while ($row = pg_fetch_assoc($res)) {
+$res = $db->query_params('SELECT username, email FROM users WHERE invited_by = :invited_by ORDER BY username', array('invited_by' => $_SESSION['user']['user_id']));
+if ($res) {
+    $any = false;
+    while ($row = $res->fetch()) {
+        if (!$any) {
+            $any = true;
+            printf('Invited');
+            printf('<br/>');
+        }
         printf('%s', html_escape($row['username']));
         printf(' - ');
         printf('%s', html_escape($row['email']));
         printf('<br/>');
     }
-    printf('<br/>');
-}
-
-$res = db_query_params('SELECT email, invitation_key FROM invitations WHERE user_id = $1 ORDER BY email', array($_SESSION['user']['user_id']));
-if ($res && pg_num_rows($res) > 0) {
-    printf('Invitations');
-    printf('<br/>');
-
-    if (array_key_exists('success', $_GET)) {
-        printf('Invitation successfully created, go ahead and send the corresponding link to your invitee');
+    if ($any) {
         printf('<br/>');
     }
+}
 
-    while ($row = pg_fetch_assoc($res)) {
+$res = $db->query_params('SELECT email, invitation_key FROM invitations WHERE user_id = :user_id ORDER BY email;', array('user_id' => $_SESSION['user']['user_id']));
+if ($res) {
+    $any = false;
+    while ($row = $res->fetch()) {
+        if (!$any) {
+            $any = true;
+            printf('Invitations');
+            printf('<br/>');
+
+            if (array_key_exists('success', $_GET)) {
+                printf('Invitation successfully created, go ahead and send the corresponding link to your invitee');
+                printf('<br/>');
+            }
+        }
+
         printf('%s', html_escape($row['email']));
         printf(' - ');
         printf('%s', $row['invitation_key']);
@@ -61,7 +71,9 @@ if ($res && pg_num_rows($res) > 0) {
         printf('<a href="%s/register.php?invite=%s">%s/register.php?invite=%s</a>', $CONFIG['base_url'], $row['invitation_key'], $CONFIG['base_url'], $row['invitation_key']);
         printf('<br/>');
     }
-    printf('<br/>');
+    if ($any) {
+        printf('<br/>');
+    }
 }
 
 printf('New invitation');

@@ -2,17 +2,17 @@
 
 require_once '../site.php';
 require_once '../bencoding.php';
-db_connect();
+$db->connect();
 require_auth();
 
-$res = db_query_params('SELECT username, passkey FROM users WHERE user_id = $1', array($_SESSION['user']['user_id'])) or die('db error');
-$user_row = pg_fetch_assoc($res) or die('no such user');
+$res = $db->query_params('SELECT username, passkey FROM users WHERE user_id = :user_id', array('user_id' => $_SESSION['user']['user_id'])) or die('db error');
+$user_row = $res->fetch() or die('no such user');
 
 $row = false;
 if (array_key_exists('id', $_GET)) {
     $id = $_GET['id'];
-    $res = db_query_params('SELECT torrent_id, name, data FROM torrents WHERE torrent_id = $1', array($id)) or die('db error');
-    $row = pg_fetch_assoc($res);
+    $res = $db->query_params('SELECT torrent_id, name, data FROM torrents WHERE torrent_id = :torrent_id', array('torrent_id' => $id)) or die('db error');
+    $row = $res->fetch();
 }
 
 if ($row === false) {
@@ -22,7 +22,7 @@ if ($row === false) {
     site_footer();
 } else {
 
-    $modified = bdecode(pg_unescape_bytea($row['data'])) or die('bencoding error');
+    $modified = bdecode($db->decode_data($row['data'])) or die('bencoding error');
     // Note: $modified['info'] must not be changed here (it will change the info hash)
 
     if (array_key_exists('announce-list', $modified)) {

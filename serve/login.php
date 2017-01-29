@@ -1,7 +1,7 @@
 <?php
 
 require_once '../site.php';
-db_connect();
+$db->connect();
 
 if (array_key_exists('user', $_SESSION)) {
     header(sprintf('Location: %s/', $CONFIG['base_url']));
@@ -20,8 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $data[$key] = $_POST[$key];
     }
 
-    $res = db_query_params('SELECT user_id, password FROM users WHERE username = $1 LIMIT 1', array($data['username'])) or die('db error');
-    if ($row = pg_fetch_assoc($res)) {
+    $res = $db->query_params('SELECT user_id, password FROM users WHERE username = :username LIMIT 1', array('username'=>$data['username'])) or die('db error');
+    if ($row = $res->fetch()) {
         if (!password_verify($data['password'], $row['password'])) {
             $error = true;
         }

@@ -2,7 +2,7 @@
 
 require_once '../site.php';
 require_once '../bencoding.php';
-db_connect();
+$db->connect();
 require_auth();
 
 site_header();
@@ -10,14 +10,14 @@ site_header();
 $row = false;
 if (array_key_exists('id', $_GET)) {
     $id = $_GET['id'];
-    $res = db_query_params('SELECT torrent_id, anonymous, name, description, data, submitted, info_hash, total_size, username FROM torrents JOIN users on users.user_id = torrents.user_id WHERE torrent_id = $1', array($id)) or die('db error');
-    $row = pg_fetch_assoc($res);
+    $res = $db->query_params('SELECT torrent_id, anonymous, name, description, data, submitted, info_hash, total_size, username FROM torrents JOIN users on users.user_id = torrents.user_id WHERE torrent_id = :torrent_id', array('torrent_id' => $id)) or die('db error');
+    $row = $res->fetch();
 }
 
 if ($row) {
 
-    $res = db_query_params('SELECT count(nullif(completed,false)) AS complete, count(nullif(completed,true)) AS incomplete FROM peers WHERE torrent_id = $1', array($row['torrent_id'])) or die('db error');
-    $comp_res = pg_fetch_assoc($res) or die('db error');
+    $res = $db->query_params('SELECT count(nullif(completed,false)) AS complete, count(nullif(completed,true)) AS incomplete FROM peers WHERE torrent_id = :torrent_id', array('torrent_id' => $row['torrent_id'])) or die('db error');
+    $comp_res = $res->fetch() or die('db error');
 
     if (array_key_exists('success', $_GET)) {
         printf('Upload successful, please download the torrent again and start seeding');
@@ -25,13 +25,13 @@ if ($row) {
         printf('<br/>');
     }
 
-    printf('Name: <tt><a href="/download.php?id=%s">%s</a></tt>', $row['torrent_id'], html_escape($row['name']));
+    printf('Name: <tt><a href="download.php?id=%s">%s</a></tt>', $row['torrent_id'], html_escape($row['name']));
     printf('<br/>');
 
-    printf('Submitted: <tt>%s</tt>', html_escape(DateTime::createFromFormat('Y-m-d H:i:s.u', $row['submitted'])->format('Y-m-d H:i:s')));
+    printf('Submitted: <tt>%s</tt>', html_escape($db->get_datetime($row['submitted'])->format('Y-m-d H:i:s')));
     printf('<br/>');
 
-    if ($row['anonymous'] !== 't') {
+    if (!$row['anonymous']) {
         printf('By: <tt>%s</tt>', html_escape($row['username']));
         printf('<br/>');
     }
@@ -59,7 +59,7 @@ if ($row) {
     printf('Files:');
     printf('<br/>');
 
-    $data = pg_unescape_bytea($row['data']);
+    $data = $db->decode_data($row['data']);
     $arr = bdecode($data);
 
     if ($arr !== false && array_key_exists('info', $arr)) {

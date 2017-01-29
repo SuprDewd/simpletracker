@@ -2,7 +2,7 @@
 
 require_once '../site.php';
 require_once '../bencoding.php';
-db_connect();
+$db->connect();
 require_auth();
 
 $errors = array();
@@ -74,10 +74,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $total_size += $arr['info']['length'];
     }
 
-    $res = db_query_params('INSERT INTO torrents (user_id, name, description, anonymous, data, info_hash, total_size) VALUES ($1,$2,$3,$4,\'' . pg_escape_bytea($data) . '\',$5,$6) RETURNING torrent_id', array($_SESSION['user']['user_id'], $name, $description, array_key_exists('anonymous', $_POST) ? 't' : 'f', $info_hash, $total_size)) or die('db error');
-    $row = pg_fetch_assoc($res);
+    $data = bencode($arr);
 
-    header(sprintf('Location: %s/torrent.php?id=%s&success', $CONFIG['base_url'], $row['torrent_id']));
+    $an = array_key_exists('anonymous', $_POST);
+    $torrent_id = $db->query_params("INSERT INTO torrents (user_id, name, description, anonymous, data, info_hash, total_size) VALUES (:user_id, :name, :description, :anonymous, :data, :info_hash, :total_size)", array('user_id' => $_SESSION['user']['user_id'], 'name' => $name, 'description' => $description, 'anonymous' => $db->encode_bool($an), 'data' => $data, 'info_hash' => $info_hash, 'total_size' => $total_size), 'torrent_id') or die('db error');
+
+    header(sprintf('Location: %s/torrent.php?id=%s&success', $CONFIG['base_url'], $torrent_id));
     die;
 }
 
