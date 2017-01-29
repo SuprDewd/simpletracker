@@ -1,6 +1,7 @@
 <?php
 
 $CONFIG = array(
+    // Example PostgreSQL configuration
     'db' => array(
         'connection_string' => 'pgsql:host=localhost;dbname=simpletracker',
         'type' => 'pgsql',
@@ -16,8 +17,8 @@ $CONFIG = array(
     //     'password' => 'simpletracker',
     // ),
 
-    'site_title' => 'simpletracker',
     'base_url' => 'https://domain.xyz', // no trailing slash
+    'site_title' => 'simpletracker',
     'max_torrent_size' => 20*1024*1024,
 );
 
