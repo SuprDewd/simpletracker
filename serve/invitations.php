@@ -30,18 +30,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 site_header();
 
+printf('<section class="info">');
 $res = $db->query_params('SELECT username, email FROM users WHERE invited_by = :invited_by ORDER BY username', array('invited_by' => $_SESSION['user']['user_id']));
 if ($res) {
     $any = false;
     while ($row = $res->fetch()) {
         if (!$any) {
             $any = true;
-            printf('Invited');
-            printf('<br/>');
+            printf('<h1>Invited</h1>');
         }
-        printf('%s', html_escape($row['username']));
-        printf(' - ');
-        printf('%s', html_escape($row['email']));
+        printf('<tt>%s</tt>', html_escape($row['username']));
+        printf(' / ');
+        printf('<tt>%s</tt>', html_escape($row['email']));
         printf('<br/>');
     }
     if ($any) {
@@ -76,17 +76,16 @@ if ($res) {
     }
 }
 
-printf('New invitation');
+printf('<h1>New invitation</h1>');
 printf('<form method="POST" action="invitations.php">');
 csrf_html();
 
-printf('Email: ');
-printf('<input type="text" name="email" />');
-printf('<br/>');
+printf('<input class="text" type="text" name="email" placeholder="Email">');
 
-printf('<input type="submit" value="Create" />');
+printf('<input class="submit" type="submit" value="Create">');
 
 printf('</form>');
+printf('</section>');
 
 site_footer();
 

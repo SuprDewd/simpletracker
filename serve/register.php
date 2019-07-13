@@ -55,9 +55,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 site_header();
-
-printf('<form method="POST" action="register.php">');
+printf('<form class="login" method="POST" action="register.php">');
 csrf_html();
+
+printf('<section class="loginbox">');
+printf('<h1>Register</h1>');
 
 if (!empty($errors)) {
     printf('Errors:');
@@ -69,29 +71,16 @@ if (!empty($errors)) {
     printf('</ul>');
 }
 
-printf('Username: ');
-printf('<input name="username" type="text" />');
-printf('<br/>');
+printf('<input class="text" name="username" type="text" placeholder="Username">');
+printf('<input class="text" name="password" type="password" placeholder="Password">');
+printf('<input class="text" name="password_again" type="password" placeholder="Password (Again)">');
+printf('<input class="text" name="email" type="text" placeholder="Email">');
+printf('<input class="text" name="invitation" type="text" value="%s" placeholder="Invitation Key">', array_key_exists('invite', $_GET) ? html_escape($_GET['invite']) : '');
 
-printf('Password: ');
-printf('<input name="password" type="password" />');
-printf('<br/>');
-
-printf('Password (again): ');
-printf('<input name="password_again" type="password" />');
-printf('<br/>');
-
-printf('Email: ');
-printf('<input name="email" type="text" />');
-printf('<br/>');
-
-printf('Invitation key: ');
-printf('<input name="invitation" type="text" value="%s" />', array_key_exists('invite', $_GET) ? html_escape($_GET['invite']) : '');
-printf('<br/>');
-
-printf('<input type="submit" value="Register" />');
+printf('<input class="submit" type="submit" value="Register">');
 
 printf('</form>');
 
+printf('</section>');
 site_footer();
 

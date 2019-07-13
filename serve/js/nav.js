@@ -1,0 +1,1 @@
+function menuFunction(){var n=document.getElementById("nav");"nav"===n.className?n.className+=" responsive":n.className="nav"}

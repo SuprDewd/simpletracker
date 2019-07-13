@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 site_header();
-
+printf('<section class="info">');
 printf('<form method="POST" action="upload.php" enctype="multipart/form-data">');
 csrf_html();
 
@@ -99,23 +99,24 @@ if (!empty($errors)) {
     printf('</ul>');
 }
 
-printf('Torrent: ');
+printf('<h1>Torrent</h1>');
 printf('<input type="hidden" name="MAX_FILE_SIZE" value="%d" />', $CONFIG['max_torrent_size']);
 printf('<input type="file" name="torrent" />');
 printf('<br/>');
 
-printf('Description:');
-printf('<br/>');
+printf('<h1>Description</h1>');
 printf('<textarea name="description" rows="15" cols="70"></textarea>');
 printf('<br/>');
 
+printf('<label class="container">Anonymous');
 printf('<input type="checkbox" name="anonymous" />');
-printf('anonymous');
+printf('<span class="checkmark"></span>');
+printf('</label>');
 printf('<br/>');
 
-printf('<input type="submit" value="Upload" />');
+printf('<input class="submit" type="submit" value="Upload" />');
 
 printf('</form>');
-
+printf('</section>');
 site_footer();
 
