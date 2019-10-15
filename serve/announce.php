@@ -52,6 +52,14 @@ if (array_key_exists('left', $data)) {
 
 if (!array_key_exists('ip', $data)) {
     $data['ip'] = $_SERVER['REMOTE_ADDR'];
+
+    $try_keys = array('HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP');
+    foreach ($try_keys as $key) {
+        if (array_key_exists($key, $_SERVER)) {
+            $data['ip'] = explode(',', $_SERVER[$key]);
+            $data['ip'] = trim($data['ip'][0]);
+        }
+    }
 }
 
 if (array_key_exists('numwant', $data)) {
