@@ -2,6 +2,8 @@
 CREATE USER simpletracker WITH PASSWORD 'simpletracker';
 CREATE DATABASE simpletracker;
 
+\c simpletracker
+
 DROP TABLE IF EXISTS invitations;
 DROP TABLE IF EXISTS peers;
 DROP TABLE IF EXISTS torrents;
