@@ -12,6 +12,20 @@ function fail($reason) {
     die(bencode(array('failure reason' => $reason)));
 }
 
+function ip2bytes($ip) {
+    $res = '';
+    $parts = explode('.', $ip);
+    if (count($parts) !== 4) return null;
+    for ($i = 0; $i < 4; $i++) {
+        $b = $parts[$i];
+        if (!is_numeric($b)) return null;
+        $b = intval($b);
+        if ($b < 0 || $b >= 256) return null;
+        $res .= chr($b);
+    }
+    return $res;
+}
+
 $keys = array(
     'username' => true,
     'passkey' => true,
@@ -23,6 +37,7 @@ $keys = array(
     'numwant' => false,
     'event' => false,
     'left' => false,
+    'compact' => false,
 );
 
 $data = array();
@@ -119,6 +134,21 @@ while ($row = $res->fetch()) {
         $peer['peer_id'] = hex2bin($row['chosen_peer_id']);
     }
     $output['peers'] []= $peer;
+}
+
+if (array_key_exists('compact', $data)) {
+    $peer_data = '';
+    foreach ($output['peers'] as $peer) {
+        $bs = ip2bytes($peer['ip']);
+        if (is_null($bs)) continue;
+        $peer_data .= $bs;
+        $peer_data .= chr($peer['port'] >> 8);
+        $peer_data .= chr($peer['port'] & 0xff);
+    }
+
+    if (empty($output['peers']) || !empty($peer_data)) {
+        $output['peers'] = $peer_data;
+    }
 }
 
 echo bencode($output);
