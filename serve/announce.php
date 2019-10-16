@@ -56,8 +56,15 @@ if (!array_key_exists('ip', $data)) {
     $try_keys = array('HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP');
     foreach ($try_keys as $key) {
         if (array_key_exists($key, $_SERVER)) {
-            $data['ip'] = explode(',', $_SERVER[$key]);
-            $data['ip'] = trim($data['ip'][0]);
+            $potential_ip = trim(explode(',', $_SERVER[$key])[0]);
+
+            // Ignore private IP addresses
+            if (strpos($potential_ip, '10.') === 0) continue;
+            if (strpos($potential_ip, '192.168.') === 0) continue;
+            // TODO: 172.16.0.0/12 is also private
+
+            $data['ip'] = $potential_ip;
+            break;
         }
     }
 }
