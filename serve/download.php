@@ -29,7 +29,7 @@ if ($row === false) {
         unset($modified['announce-list']);
     }
 
-    $modified['announce'] = $CONFIG['base_url'] . '/announce.php?username=' . urlencode($user_row['username']) . '&passkey=' . urlencode($user_row['passkey']);
+    $modified['announce'] = $CONFIG['base_url'] . '/announce.php?token=' . urlencode(base64_encode(openssl_encrypt($user_row['username'] . '&' . $user_row['passkey'] . '&' . $row['torrent_id'], "AES-128-ECB", 'CUSTOMKEY')));
 
     $output = bencode($modified) or die('bencoding error');
 
