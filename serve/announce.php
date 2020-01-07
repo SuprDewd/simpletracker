@@ -49,10 +49,25 @@ foreach ($keys as $key => $req) {
     }
 }
 
+$decoded_token = openssl_decrypt(base64_decode(urldecode($data['token'])), "AES-128-ECB", 'CUSTOMKEY');
+
+$pieces = explode("&", $decoded_token);
+if(isset($pieces[0])){
+    $username = $pieces[0];
+}else{
+    fail(sprintf('missing key: username'));
+}
+if(isset($pieces[1])){
+    $passkey = $pieces[1];
+}else{
+    fail(sprintf('missing key: passkey'));
+}
+
+
 $data['info_hash'] = bin2hex($data['info_hash']);
 $data['peer_id'] = bin2hex($data['peer_id']);
 
-$res = $db->query_params('SELECT user_id FROM users WHERE username = :username AND passkey = :passkey', array('username' => $data['username'], 'passkey' => $data['passkey'])) or fail('db error');
+$res = $db->query_params('SELECT user_id FROM users WHERE username = :username AND passkey = :passkey', array('username' => $username, 'passkey' => $passkey)) or fail('db error');
 $user_row = $res->fetch() or fail('access denied');
 
 if (!is_numeric($data['port'])) fail('invalid port');
