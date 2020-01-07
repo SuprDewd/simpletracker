@@ -14,12 +14,12 @@ if (array_key_exists('id', $_GET)) {
     $row = $res->fetch();
 }
 
+printf('<section class="info">');
+
 if ($row) {
 
     $res = $db->query_params('SELECT count(nullif(completed,false)) AS complete, count(nullif(completed,true)) AS incomplete FROM peers WHERE torrent_id = :torrent_id', array('torrent_id' => $row['torrent_id'])) or die('db error');
     $comp_res = $res->fetch() or die('db error');
-
-    printf('<section class="info">');
 
     if (array_key_exists('success', $_GET)) {
         printf('Upload successful, please download the torrent again and start seeding');
@@ -28,7 +28,7 @@ if ($row) {
 
     printf('<h1><a href="download.php?id=%s">%s</a></h1>', $row['torrent_id'], html_escape($row['name']));
 
-    printf('<div class="table"><table id="torrents" style="width:100%%;margin:0">');
+    printf('<div class="table"><table id="torrents" style="width:100%%;margin:0 0 20px 0">');
 
     printf('<tr><th>Submitted</th><td><tt>%s</tt></td></tr>', html_escape($db->get_datetime($row['submitted'])->format('Y-m-d H:i:s')));
 
@@ -65,11 +65,11 @@ if ($row) {
         }
     }
 
-    printf('</section>');
-
 } else {
-    printf('No such torrent');
+    printf('<div class="bad notification">No such torrent</div>');
 }
+
+printf('</section>');
 
 site_footer();
 

@@ -55,19 +55,17 @@ if ($res) {
     while ($row = $res->fetch()) {
         if (!$any) {
             $any = true;
-            printf('Invitations');
-            printf('<br/>');
+            printf('<h1>Invitations</h1>');
 
             if (array_key_exists('success', $_GET)) {
-                printf('Invitation successfully created, go ahead and send the corresponding link to your invitee');
-                printf('<br/>');
+                printf('<div class="good notification">Invitation successfully created, go ahead and send the corresponding link to your invitee</div>');
             }
         }
 
-        printf('%s', html_escape($row['email']));
-        printf(' - ');
-        printf('%s', $row['invitation_key']);
-        printf(' - ');
+        printf('<tt>%s</tt>', html_escape($row['email']));
+        printf(' / ');
+        printf('<tt>%s</tt>', $row['invitation_key']);
+        printf(' / ');
         printf('<a href="%s/register.php?invite=%s">%s/register.php?invite=%s</a>', $CONFIG['base_url'], $row['invitation_key'], $CONFIG['base_url'], $row['invitation_key']);
         printf('<br/>');
     }
@@ -80,7 +78,7 @@ printf('<h1>New invitation</h1>');
 printf('<form method="POST" action="invitations.php">');
 csrf_html();
 
-printf('<input class="text" type="text" name="email" placeholder="Email">');
+printf('<input class="text" type="text" name="email" placeholder="Email address">');
 
 printf('<input class="submit" type="submit" value="Create">');
 

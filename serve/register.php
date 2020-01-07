@@ -55,27 +55,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 site_header();
-printf('<form class="login" method="POST" action="register.php">');
+printf('<form class="login" method="POST" action="register.php%s">', array_key_exists('invite', $_GET) ? '?invite=' . html_escape(urlencode($_GET['invite'])) : '');
 csrf_html();
 
 printf('<section class="loginbox">');
 printf('<h1>Register</h1>');
 
 if (!empty($errors)) {
-    printf('Errors:');
-    printf('<br/>');
-    printf('<ul>');
     foreach ($errors as $error) {
-        printf('<li>%s</li>', html_escape($error));
+        printf('<div class="bad notification">%s</div>', html_escape($error));
     }
-    printf('</ul>');
 }
 
 printf('<input class="text" name="username" type="text" placeholder="Username">');
 printf('<input class="text" name="password" type="password" placeholder="Password">');
-printf('<input class="text" name="password_again" type="password" placeholder="Password (Again)">');
-printf('<input class="text" name="email" type="text" placeholder="Email">');
-printf('<input class="text" name="invitation" type="text" value="%s" placeholder="Invitation Key">', array_key_exists('invite', $_GET) ? html_escape($_GET['invite']) : '');
+printf('<input class="text" name="password_again" type="password" placeholder="Password (again)">');
+printf('<input class="text" name="email" type="text" placeholder="Email address">');
+printf('<input class="text" name="invitation" type="text" value="%s" placeholder="Invitation key">', array_key_exists('invite', $_GET) ? html_escape($_GET['invite']) : '');
 
 printf('<input class="submit" type="submit" value="Register">');
 

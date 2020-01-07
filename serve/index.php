@@ -11,13 +11,12 @@ if ($res) {
     while ($row = $res->fetch()) {
 
         $submitted = $db->get_datetime($row['submitted']);
-        printf('<tr><td><a href="torrent.php?id=%s">%s</a></td><td class="center"><a href="download.php?id=%s">DL</a></td><td class="center">%s</td>', $row['torrent_id'], html_escape($row['name']), $row['torrent_id'], $submitted->format('Y-m-d H:i:s'));
+        printf('<tr><td><a href="torrent.php?id=%s">%s</a></td><td class="center"><a href="download.php?id=%s">DL</a></td><td class="center">%s</td>', $row['torrent_id'], html_escape($row['name']), $row['torrent_id'], html_escape($submitted->format('Y-m-d H:i:s')));
 
-        if (!$row['anonymous']) {
+        if ($row['anonymous']) {
+            printf('<td class="center"><i>anonymous</i></td>');
+        } else {
             printf('<td class="center">%s</td>', html_escape($row['username']));
-        }
-        else {
-            printf('<td class="center">Anon.</td>');
         }
 
         printf('</tr>');
