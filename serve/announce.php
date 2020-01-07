@@ -28,7 +28,8 @@ function ip2bytes($ip) {
 
 $keys = array(
     'username' => true,
-    'passkey' => true,
+    'torrent_id' => true,
+    'token' => true,
     'info_hash' => true,
     'peer_id' => true,
     'port' => true,
@@ -49,26 +50,14 @@ foreach ($keys as $key => $req) {
     }
 }
 
-$decoded_token = openssl_decrypt(base64_decode(urldecode($data['token'])), "AES-128-ECB", 'CUSTOMKEY');
-
-$pieces = explode("&", $decoded_token);
-if(isset($pieces[0])){
-    $username = $pieces[0];
-}else{
-    fail(sprintf('missing key: username'));
-}
-if(isset($pieces[1])){
-    $passkey = $pieces[1];
-}else{
-    fail(sprintf('missing key: passkey'));
-}
-
-
 $data['info_hash'] = bin2hex($data['info_hash']);
 $data['peer_id'] = bin2hex($data['peer_id']);
 
-$res = $db->query_params('SELECT user_id FROM users WHERE username = :username AND passkey = :passkey', array('username' => $username, 'passkey' => $passkey)) or fail('db error');
+$res = $db->query_params('SELECT user_id, passkey FROM users WHERE username = :username', array('username' => $data['username'])) or fail('db error');
 $user_row = $res->fetch() or fail('access denied');
+
+$token = md5('token{' . $data['torrent_id'] . ',' . $user_row['passkey'] . '}');
+if (!hash_equals($token, $data['token'])) fail('access denied');
 
 if (!is_numeric($data['port'])) fail('invalid port');
 $data['port'] = intval($data['port']);
@@ -108,7 +97,7 @@ if (array_key_exists('numwant', $data)) {
     $data['numwant'] = 30;
 }
 
-$res = $db->query_params('SELECT torrent_id FROM torrents WHERE info_hash = :info_hash', array('info_hash' => $data['info_hash'])) or fail('db error');
+$res = $db->query_params('SELECT torrent_id FROM torrents WHERE info_hash = :info_hash AND torrent_id = :torrent_id', array('info_hash' => $data['info_hash'], 'torrent_id' => $data['torrent_id'])) or fail('db error');
 $torrent_row = $res->fetch() or fail('no such torrent');
 
 $res = $db->query_params('SELECT peer_id FROM peers WHERE user_id = :user_id AND torrent_id = :torrent_id AND chosen_peer_id = :chosen_peer_id', array('user_id' => $user_row['user_id'], 'torrent_id' => $torrent_row['torrent_id'], 'chosen_peer_id' => $data['peer_id'])) or fail('db error');
