@@ -59,22 +59,25 @@ function site_header() {
     printf('<!DOCTYPE html>');
     printf('<html>');
     printf('<head>');
+    printf('<meta name="viewport" content="width=device-width, initial-scale=1">');
+    printf('<meta name="format-detection" content="telephone=no">');
+    printf('<link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">');
+    printf('<link rel="icon" href="/img/favicon.ico" type="image/x-icon">');
+    printf('<link rel="stylesheet" href="/css/style.css">');
+    printf('<script src="/js/nav.js"></script>');
     printf('<title>%s</title>', html_escape($CONFIG['site_title']));
     printf('</head>');
     printf('<body>');
 
     if (array_key_exists('user', $_SESSION)) {
-        printf('sup %s', html_escape($_SESSION['user']['username']));
-        printf(' | ');
-        printf('<a href="index.php">index</a>');
-        printf(' | ');
-        printf('<a href="upload.php">upload</a>');
-        printf(' | ');
-        printf('<a href="invitations.php">invitations</a>');
-        printf(' | ');
-        printf('<a href="logout.php">logout</a>');
-        printf('<br/>');
-        printf('<br/>');
+        printf('<nav><ul class="nav" id="nav">');
+        printf('<li class="right"><a>Welcome, %s</a></li>', html_escape($_SESSION['user']['username']));
+        printf('<li><a href="index.php">Index</a></li>');
+        printf('<li><a href="upload.php">Upload</a></li>');
+        printf('<li><a href="invitations.php">Invitations</a></li>');
+        printf('<li><a href="logout.php">Logout</a></li>');
+        printf('<li class="icon"><a href="javascript:void(0);"  onclick="toggleMenu()">+</a></li>');
+        printf('</ul></nav>');
     }
 }
 

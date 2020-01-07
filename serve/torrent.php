@@ -14,6 +14,8 @@ if (array_key_exists('id', $_GET)) {
     $row = $res->fetch();
 }
 
+printf('<section class="info">');
+
 if ($row) {
 
     $res = $db->query_params('SELECT count(nullif(completed,false)) AS complete, count(nullif(completed,true)) AS incomplete FROM peers WHERE torrent_id = :torrent_id', array('torrent_id' => $row['torrent_id'])) or die('db error');
@@ -22,42 +24,29 @@ if ($row) {
     if (array_key_exists('success', $_GET)) {
         printf('Upload successful, please download the torrent again and start seeding');
         printf('<br/>');
-        printf('<br/>');
     }
 
-    printf('Name: <tt><a href="download.php?id=%s">%s</a></tt>', $row['torrent_id'], html_escape($row['name']));
-    printf('<br/>');
+    printf('<h1><a href="download.php?id=%s">%s</a></h1>', $row['torrent_id'], html_escape($row['name']));
 
-    printf('Submitted: <tt>%s</tt>', html_escape($db->get_datetime($row['submitted'])->format('Y-m-d H:i:s')));
-    printf('<br/>');
+    printf('<div class="table"><table id="torrents" style="width:100%%;margin:0 0 20px 0">');
+
+    printf('<tr><th>Submitted</th><td><tt>%s</tt></td></tr>', html_escape($db->get_datetime($row['submitted'])->format('Y-m-d H:i:s')));
 
     if (!$row['anonymous']) {
-        printf('By: <tt>%s</tt>', html_escape($row['username']));
-        printf('<br/>');
+        printf('<tr><th>By</th><td><tt>%s</tt></td></tr>', html_escape($row['username']));
     }
 
-    printf('Size: <tt>%s</tt>', format_size($row['total_size']));
-    printf('<br/>');
+    printf('<tr><th>Size</th><td><tt>%s</tt></td></tr>', format_size($row['total_size']));
+    printf('<tr><th>Info hash</th><td><tt>%s</tt></td></tr>', $row['info_hash']);
+    printf('<tr><th>Seeders</th><td><tt>%d</tt></td></tr>', $comp_res['complete']);
+    printf('<tr><th>Leechers</th><td><tt>%d</tt></td></tr>', $comp_res['incomplete']);
 
-    printf('Info hash: <tt>%s</tt>', $row['info_hash']);
-    printf('<br/>');
+    printf('</table></div>');
 
-    printf('Seeders: <tt>%d</tt>', $comp_res['complete']);
-    printf('<br/>');
-    printf('Leechers: <tt>%d</tt>', $comp_res['incomplete']);
-    printf('<br/>');
+    printf('<h1>Description</h1>');
+    printf('<pre>%s</pre>', html_escape($row['description']));
 
-    printf('Description:');
-    printf('<br/>');
-    printf('<tt>');
-    printf('<pre>');
-    printf('%s', html_escape($row['description']));
-    printf('</pre>');
-    printf('</tt>');
-    printf('<br/>');
-
-    printf('Files:');
-    printf('<br/>');
+    printf('<h1>Files</h1>');
 
     $data = $db->decode_data($row['data']);
     $arr = bdecode($data);
@@ -66,23 +55,21 @@ if ($row) {
         if (array_key_exists('files', $arr['info'])) {
             foreach ($arr['info']['files'] as $file) {
                 if (array_key_exists('path', $file)) {
-                    printf("<tt>");
-                    printf("%s", html_escape(implode('/', $file['path'])));
-                    printf("</tt>");
+                    printf("<tt>%s</tt>", html_escape(implode('/', $file['path'])));
                     printf("<br/>");
                 }
             }
         } else if (array_key_exists('name', $arr['info'])) {
-            printf("<tt>");
-            printf("%s", html_escape($arr['info']['name']));
-            printf("</tt>");
+            printf("<tt>%s</tt>", html_escape($arr['info']['name']));
             printf("<br/>");
         }
     }
 
 } else {
-    printf('No such torrent');
+    printf('<div class="bad notification">No such torrent</div>');
 }
+
+printf('</section>');
 
 site_footer();
 

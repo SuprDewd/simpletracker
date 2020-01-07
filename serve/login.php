@@ -11,6 +11,12 @@ if (array_key_exists('user', $_SESSION)) {
 $error = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     check_csrf();
+
+    if (isset($_POST['register'])) {
+        header(sprintf('Location: %s/register.php', $CONFIG['base_url']));
+        die;
+    }
+
     $data = array();
     $keys = array('username', 'password');
     foreach ($keys as $key) {
@@ -41,30 +47,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 
-printf('<form method="POST" action="login.php">');
+site_header();
+
+printf('<form class="login" method="POST" action="login.php">');
 csrf_html();
 
+printf('<h1>%s</h1>', html_escape($CONFIG['site_title']));
+
 if (array_key_exists('success', $_GET)) {
-    printf('Registration successful, go ahead and log in');
-    printf('<br/>');
-    printf('<br/>');
+    printf('<div class="good notification">Registration successful, go ahead and log in</div>');
 }
 
 if ($error) {
-    printf('Invalid credentials');
-    printf('<br/>');
-    printf('<br/>');
+    printf('<div class="bad notification">Invalid credentials</div>');
 }
 
-printf('Username: ');
-printf('<input name="username" type="text" />');
-printf('<br/>');
+printf('<section class="loginbox">');
+printf('<input class="text" name="username" type="text" placeholder="Username">');
 
-printf('Password: ');
-printf('<input name="password" type="password" />');
-printf('<br/>');
+printf('<input class="text" name="password" type="password" placeholder="Password">');
 
-printf('<input type="submit" value="Login" /> or <a href="/register.php">Register</a>');
+printf('<input class="submit" type="submit" name="login" value="Login"><input class="submit right" type="submit" name="register" value="Register">');
 
+printf('</section>');
 printf('</form>');
 
+site_footer();
