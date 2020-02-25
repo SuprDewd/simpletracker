@@ -37,13 +37,15 @@ if ($res) {
     while ($row = $res->fetch()) {
         if (!$any) {
             $any = true;
-            printf('<h1>Invited</h1>');
+            echo '<h1>Invited</h1><figure class="highlight">';
+            
         }
         printf('<tt>%s</tt>', html_escape($row['username']));
-        printf(' / ');
+        printf(' | ');
         printf('<tt>%s</tt>', html_escape($row['email']));
         printf('<br/>');
     }
+    echo '</figure>';
     if ($any) {
         printf('<br/>');
     }
@@ -55,22 +57,30 @@ if ($res) {
     while ($row = $res->fetch()) {
         if (!$any) {
             $any = true;
-            printf('<h1>Invitations</h1>');
+            printf('<h1>Pending Invitations</h1>');
 
             if (array_key_exists('success', $_GET)) {
                 printf('<div class="good notification">Invitation successfully created, go ahead and send the corresponding link to your invitee</div>');
             }
+            echo '<div class="row">';
         }
-
-        printf('<tt>%s</tt>', html_escape($row['email']));
-        printf(' / ');
-        printf('<tt>%s</tt>', $row['invitation_key']);
-        printf(' / ');
-        printf('<a href="%s/register.php?invite=%s">%s/register.php?invite=%s</a>', $CONFIG['base_url'], $row['invitation_key'], $CONFIG['base_url'], $row['invitation_key']);
-        printf('<br/>');
+        
+        ?>
+        <div class="col-md-3">
+            <div class="card">
+                <h5 class="card-header">Invitation</h5>
+                <div class="card-body">
+                    <h5 class="card-title"><?php echo $row['email'];?></h5>
+                    <p class="card-text">Invite Key: <?php echo $row['invitation_key'];?></p>
+                    <a href="<?php echo $CONFIG['base_url'];?>/register.php?invite=<?php echo $row['invitation_key'];?>" class="btn btn-primary">Invite Link</a>
+                </div>
+            </div>
+        </div>
+        <?php
     }
+    echo '</div>';
     if ($any) {
-        printf('<br/>');
+        print('<br/>');
     }
 }
 
