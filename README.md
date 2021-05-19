@@ -1,5 +1,5 @@
 
-# simpletracker (Hidrex Edition)
+# simpletracker
 
 `simpletracker` is a minimal implementation of a private BitTorrent tracker,
 written in PHP. It supports both the PostgreSQL and MySQL backends. Features include
