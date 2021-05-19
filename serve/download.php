@@ -1,5 +1,4 @@
 <?php
-
 require_once '../site.php';
 require_once '../bencoding.php';
 $db->connect();
@@ -34,11 +33,9 @@ if ($row === false) {
     $modified['announce'] = $CONFIG['base_url'] . '/announce.php?username=' . urlencode($user_row['username']) . '&torrent_id=' . urlencode($torrent_id) . '&token=' . urlencode($token);
 
     $output = bencode($modified) or die('bencoding error');
-
     header('Cache-control: private');
     header('Content-Type: application/octet-stream');
     header('Content-Length: ' . strlen($output));
-    header('Content-Disposition: filename=' . $row['name']);
+    header('Content-Disposition: attachment; filename="'.basename($row['name']).'"');
     echo $output;
 }
-

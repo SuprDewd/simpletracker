@@ -1,5 +1,5 @@
 
-# simpletracker
+# Simpletracker (Bootstrap)
 
 `simpletracker` is a minimal implementation of a private BitTorrent tracker,
 written in PHP. It supports both the PostgreSQL and MySQL backends. Features include
@@ -33,3 +33,6 @@ The code has been tested on an Arch Linux server, using nginx (1.10.1), and both
 MySQL (10.1.18-MariaDB) and PostgreSQL (9.5.4). Users have also reported the
 code working on Windows. Your mileage may vary.
 
+## What's different about this version?
+- Bootstrap compatible
+- Fixed bugs

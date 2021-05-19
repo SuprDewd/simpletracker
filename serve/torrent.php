@@ -1,5 +1,4 @@
 <?php
-
 require_once '../site.php';
 require_once '../bencoding.php';
 $db->connect();
@@ -46,7 +45,9 @@ if ($row) {
     printf('<h1>Description</h1>');
     printf('<pre>%s</pre>', html_escape($row['description']));
 
-    printf('<h1>Files</h1>');
+    printf('<h1>Files</h1>
+    <div class="card">
+        <div class="card-body">');
 
     $data = $db->decode_data($row['data']);
     $arr = bdecode($data);
@@ -64,6 +65,7 @@ if ($row) {
             printf("<br/>");
         }
     }
+    printf('</div></div>');
 
 } else {
     printf('<div class="bad notification">No such torrent</div>');
@@ -72,4 +74,3 @@ if ($row) {
 printf('</section>');
 
 site_footer();
-
